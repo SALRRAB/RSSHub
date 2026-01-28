@@ -1,6 +1,7 @@
-import { Route } from '@/types';
-import got from '@/utils/got';
 import { load } from 'cheerio';
+
+import type { Route } from '@/types';
+import got from '@/utils/got';
 import { parseDate } from '@/utils/parse-date';
 
 export const route: Route = {
@@ -29,7 +30,7 @@ export const route: Route = {
         const url = `https://www.tjftz.gov.cn/channels/${channelId}.html`;
         const { data: response } = await got(url);
         const noticeCate = load(response)('.location').text().trim();
-        const item = load(response)('#sec_right>ul>span>li>.layui-row')
+        const item = load(response)('#sec_right>ul li>.layui-row')
             .toArray()
             .map((el) => {
                 const $ = load(el);

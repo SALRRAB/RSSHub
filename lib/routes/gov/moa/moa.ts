@@ -1,7 +1,8 @@
-import { Route } from '@/types';
+import { load } from 'cheerio';
+
+import type { Route } from '@/types';
 import cache from '@/utils/cache';
 import got from '@/utils/got';
-import { load } from 'cheerio';
 import { parseRelativeDate } from '@/utils/parse-date';
 
 const hostUrl = 'http://www.moa.gov.cn/';
@@ -82,7 +83,8 @@ async function dealChannel(suburl, selectors) {
     const channelTitle = channelTitleText ?? $(channelTitleSelector).text();
 
     const pageInfos = $(listSelector)
-        .map((i, e) => {
+        .toArray()
+        .map((e) => {
             const element = $(e);
             const titleElement = element.find(titleSelector);
 
@@ -99,8 +101,7 @@ async function dealChannel(suburl, selectors) {
                 // 如果是公示文章或者站外文章的话只能用这个保底了
                 pubDate: parseRelativeDate(dateraw),
             };
-        })
-        .get();
+        });
 
     const items = await Promise.all(
         pageInfos.map(async (item) => {

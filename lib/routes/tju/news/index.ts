@@ -1,7 +1,8 @@
-import { Route } from '@/types';
+import { load } from 'cheerio';
+
+import type { Route } from '@/types';
 import cache from '@/utils/cache';
 import got from '@/utils/got';
-import { load } from 'cheerio';
 import { parseDate } from '@/utils/parse-date';
 import timezone from '@/utils/timezone';
 
@@ -97,7 +98,7 @@ async function handler(ctx) {
         const $ = load(response.data);
 
         let list;
-        list = type === 'picture' ? $('.picList > li').get() : $('.indexList > li').get();
+        list = type === 'picture' ? $('.picList > li').toArray() : $('.indexList > li').toArray();
 
         list = list.map((item) => {
             const href = $('h4 > a', item).attr('href');

@@ -1,9 +1,9 @@
-import { DataItem, Route } from '@/types';
+import { load } from 'cheerio';
 
 import { config } from '@/config';
+import type { DataItem, Route } from '@/types';
 import ofetch from '@/utils/ofetch';
 import { parseDate } from '@/utils/parse-date';
-import { load } from 'cheerio';
 
 // test url http://localhost:1200/asianfanfics/tag/milklove/N
 
@@ -72,12 +72,14 @@ async function handler(ctx) {
             const link = 'https://www.asianfanfics.com' + $element.find('.excerpt__title a').attr('href');
             const author = $element.find('.excerpt__meta__name a').text().trim();
             const pubDate = parseDate($element.find('time').attr('datetime') || '');
+            const description = $element.find('.excerpt__text').html();
 
             return {
                 title,
                 link,
                 author,
                 pubDate,
+                description,
             };
         });
 

@@ -1,10 +1,10 @@
+import type { Cheerio, Element } from 'cheerio';
+import { JSDOM } from 'jsdom';
+
+import { config } from '@/config';
+import ofetch from '@/utils/ofetch';
 import { parseDate } from '@/utils/parse-date';
 import timezone from '@/utils/timezone';
-import ofetch from '@/utils/ofetch';
-import { config } from '@/config';
-import asyncPool from 'tiny-async-pool';
-import { JSDOM } from 'jsdom';
-import type { Cheerio, Element } from 'cheerio';
 
 export const bbsOrigin = 'https://bbs.yamibo.com';
 
@@ -103,12 +103,4 @@ export function generateDescription($item: Cheerio<Element>, postId: string) {
     }
 
     return description;
-}
-
-export async function asyncPoolAll<IN, OUT>(poolLimit: number, array: readonly IN[], iteratorFn: (generator: IN) => Promise<OUT>) {
-    const results: Awaited<OUT[]> = [];
-    for await (const result of asyncPool(poolLimit, array, iteratorFn)) {
-        results.push(result);
-    }
-    return results;
 }

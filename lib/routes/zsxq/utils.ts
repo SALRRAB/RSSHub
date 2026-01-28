@@ -1,8 +1,9 @@
-import got from '@/utils/got';
-import type { TopicImage, Topic, BasicResponse, ResponseData } from './types';
-import { parseDate } from '@/utils/parse-date';
 import { config } from '@/config';
 import type { DataItem } from '@/types';
+import got from '@/utils/got';
+import { parseDate } from '@/utils/parse-date';
+
+import type { BasicResponse, ResponseData, Topic, TopicImage } from './types';
 
 export async function customFetch<T extends BasicResponse<ResponseData>>(path: string, retryCount = 0): Promise<T['resp_data']> {
     const apiUrl = 'https://api.zsxq.com/v2';
@@ -25,7 +26,7 @@ export async function customFetch<T extends BasicResponse<ResponseData>>(path: s
 
 function parseTopicContent(text: string = '', images: TopicImage[] = []) {
     let result = text.replaceAll('\n', '<br>');
-    result = result.replaceAll(/<e type="web" href="(.*?)" title="(.*?)" \/>/g, (_, p1, p2) => `<a href=${decodeURIComponent(p1)}>${decodeURIComponent(p2)}</a>`);
+    result = result.replaceAll(/<e type="web" href="(.*?)" title="(.*?)" style="(.*?)" \/>/g, (_, p1, p2) => `<a href=${decodeURIComponent(p1)}>${decodeURIComponent(p2)}</a>`);
     result = result.replaceAll(/<e type="hashtag".*?title="(.*?)" \/>/g, (_, p1) => {
         const title = decodeURIComponent(p1);
         return `<span>${title}</span>`;

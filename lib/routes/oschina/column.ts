@@ -1,24 +1,22 @@
-import path from 'node:path';
+import type { Cheerio, CheerioAPI } from 'cheerio';
+import { load } from 'cheerio';
+import type { Element } from 'domhandler';
+import type { Context } from 'hono';
 
-import { type CheerioAPI, type Cheerio, type Element, load } from 'cheerio';
-import { type Context } from 'hono';
-
-import { type DataItem, type Route, type Data, ViewType } from '@/types';
-
-import { art } from '@/utils/render';
+import type { Data, DataItem, Route } from '@/types';
+import { ViewType } from '@/types';
 import cache from '@/utils/cache';
-import { getCurrentPath } from '@/utils/helpers';
 import ofetch from '@/utils/ofetch';
 import { parseDate } from '@/utils/parse-date';
 import timezone from '@/utils/timezone';
 
-const __dirname = getCurrentPath(import.meta.url);
+import { renderDescription } from './templates/description';
 
 export const handler = async (ctx: Context): Promise<Data> => {
     const { id } = ctx.req.param();
     const limit: number = Number.parseInt(ctx.req.query('limit') ?? '10', 10);
 
-    const baseUrl: string = 'https://www.oschina.net';
+    const baseUrl = 'https://www.oschina.net';
     const userHostRegex: string = String.raw`https://my\.oschina\.net`;
     const targetUrl: string = new URL(`news/column?columnId=${id}`, baseUrl).href;
 
@@ -35,7 +33,7 @@ export const handler = async (ctx: Context): Promise<Data> => {
             const $el: Cheerio<Element> = $(el);
 
             const title: string = $el.find('div.title').text();
-            const description: string = art(path.join(__dirname, 'templates/description.art'), {
+            const description: string = renderDescription({
                 intro: $el.find('div.description p.line-clamp').text(),
             });
             const pubDateStr: string | undefined = $el.find('inddiv.item').contents().last().text().trim();
@@ -85,7 +83,7 @@ export const handler = async (ctx: Context): Promise<Data> => {
                     $$('.ad-wrap').remove();
 
                     const title: string = $$('h1.article-box__title').text();
-                    const description: string = art(path.join(__dirname, 'templates/description.art'), {
+                    const description: string = renderDescription({
                         description: $$('div.content').html(),
                     });
                     const pubDateEl: Element = $$('div.article-box__meta div.item-list div.item')
@@ -97,7 +95,7 @@ export const handler = async (ctx: Context): Promise<Data> => {
                     const categories: string[] = [...new Set(categoryEls.map((el) => $$(el).text()).filter(Boolean))];
                     const authorEls: Element[] = $$('div.article-box__meta div.item-list div.item a')
                         .toArray()
-                        .filter((i) => ($$(i).attr('href') ? new RegExp(`^${userHostRegex}/u/\\d+$`).test($$(i).attr('href') as string) : false));
+                        .filter((i) => ($$(i).attr('href') ? new RegExp(String.raw`^${userHostRegex}/u/\d+$`).test($$(i).attr('href') as string) : false));
                     const authors: DataItem['author'] = authorEls.map((authorEl) => {
                         const $authorEl: Cheerio<Element> = $$(authorEl);
 
@@ -106,7 +104,7 @@ export const handler = async (ctx: Context): Promise<Data> => {
                             url: $authorEl.attr('href'),
                         };
                     });
-                    const guid: string = `oschina-${$$('val[data-name="objId"]').attr('data-value')}`;
+                    const guid = `oschina-${$$('val[data-name="objId"]').attr('data-value')}`;
                     const image: string | undefined = $$('val[data-name="sharePic"]').attr('data-value');
                     const upDatedStr: string | undefined = $$('meta[property="bytedance:updated_time"]').attr('content') || pubDateStr;
 
@@ -185,9 +183,8 @@ export const route: Route = {
     parameters: {
         id: '专栏 id，可在对应专栏页 URL 中找到',
     },
-    description: `:::tip
+    description: `::: tip
 若订阅 [开源安全专栏](https://www.oschina.net/news/column?columnId=14)，网址为 \`https://www.oschina.net/news/column?columnId=14\`，请截取 \`https://www.oschina.net/news/column?columnId=\` 到末尾的部分 \`14\` 作为 \`id\` 参数填入，此时目标路由为 [\`/oschina/column/14\`](https://rsshub.app/oschina/column/14)。
-
 :::
 
 <details>

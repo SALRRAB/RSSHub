@@ -1,7 +1,7 @@
-import { Route, Data } from '@/types';
-import got from '@/utils/got';
 import { config } from '@/config';
 import ConfigNotFoundError from '@/errors/types/config-not-found';
+import type { Data, Route } from '@/types';
+import got from '@/utils/got';
 
 export const route: Route = {
     path: '/entry/:feeds/:parameters?',
@@ -74,8 +74,8 @@ async function handler(ctx) {
             return '';
         }
 
-        const filter = item.substring(0, item.indexOf('='));
-        const option = item.substring(item.lastIndexOf('=') + 1);
+        const filter = item.slice(0, item.indexOf('='));
+        const option = item.slice(item.lastIndexOf('=') + 1);
 
         switch (filter) {
             case 'mark':
@@ -105,7 +105,7 @@ async function handler(ctx) {
                 break;
             // If user mistakenly set `category=Int`
             case 'category':
-                isNaN(Number.parseInt(option)) ? (item = '') : (item = `category_id=${option}`);
+                Number.isNaN(Number.parseInt(option)) ? (item = '') : (item = `category_id=${option}`);
                 break;
             case 'order':
                 if (option !== 'id' && option !== 'category_title' && option !== 'published_at' && option !== 'status' && option !== 'category_id') {
@@ -117,7 +117,7 @@ async function handler(ctx) {
             // parameter, since user may mistakenly input this parameter
             // several times.
             case 'limit':
-                if (!isNaN(option) && !setLimit.length) {
+                if (!Number.isNaN(option) && !setLimit.length) {
                     limit = option;
                     setLimit.push(1);
                 }
@@ -157,7 +157,7 @@ async function handler(ctx) {
 
     let queryLimit = ctx.req.query('limit');
     let result: Data;
-    if (feeds.search(/feeds?=/g) !== -1 || !isNaN(Number.parseInt(feeds.split('&').join('')))) {
+    if (feeds.search(/feeds?=/g) !== -1 || !Number.isNaN(Number.parseInt(feeds.split('&').join('')))) {
         const feedsID = feeds.replaceAll(/feeds?=/g, '');
         const feedsList = [feedsID.split('&')].flat();
 
@@ -233,13 +233,13 @@ async function handler(ctx) {
         let agTitle, agInfo;
         if (feedsNumber > 2) {
             agTitle = `MiniFlux | Aggregator For ${feedsNumber} Feeds`;
-            agInfo = 'An aggregator powered by MiniFlux and RSSHub. ' + 'This aggregator truthfully preserves the contents in ' + `${feedsNumber} feeds, including: ` + `<li>${feedsName.join('<li></li>')}</li>`;
+            agInfo = `An aggregator powered by MiniFlux and RSSHub. This aggregator truthfully preserves the contents in ${feedsNumber} feeds, including: <li>${feedsName.join('<li></li>')}</li>`;
         } else if (feedsNumber) {
             agTitle = `MiniFlux | ${feedsName.join(', ')}`;
-            agInfo = 'A RSS feed powered by MiniFlux and RSSHub ' + 'effortlessly republishes the contents in ' + `"${feedsName.join('" & "')}".`;
+            agInfo = `A RSS feed powered by MiniFlux and RSSHub effortlessly republishes the contents in "${feedsName.join('" & "')}".`;
         } else {
             agTitle = `MiniFlux | Feeds Aggregator`;
-            agInfo = 'An aggregator powered by MiniFlux and RSSHub ' + 'with empty content. If this is not your intention, ' + `please double-check your setting for parameters.`;
+            agInfo = 'An aggregator powered by MiniFlux and RSSHub with empty content. If this is not your intention, please double-check your setting for parameters.';
         }
 
         result = {

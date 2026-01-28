@@ -1,9 +1,11 @@
-import { Route } from '@/types';
-import { namespace } from './namespace';
-import ofetch from '@/utils/ofetch';
-import cache from '@/utils/cache';
 import { load } from 'cheerio';
+
+import type { Route } from '@/types';
+import cache from '@/utils/cache';
+import ofetch from '@/utils/ofetch';
 import { parseDate } from '@/utils/parse-date';
+
+import { namespace } from './namespace';
 
 const baseUrl = `https://${namespace.url}`;
 
@@ -26,6 +28,7 @@ export const route: Route = {
         const $ = load(response);
         const links = $('.archives-group article')
             .toArray()
+            .slice(0, 10)
             .map((item) => {
                 item = $(item);
                 const a = item.find('a').first();
