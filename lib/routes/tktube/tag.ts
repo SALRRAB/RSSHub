@@ -37,7 +37,7 @@ class AV {
 }
 
 // ---------- 按照“新路由制作方法”导出 ----------
-module。exports = {
+module.exports = {
     route: {
         path: '/tag/:tagid',
         categories: ['multimedia'],
