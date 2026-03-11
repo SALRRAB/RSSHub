@@ -24,7 +24,7 @@ const vrLabels = [
     'slr', 'urvrsp', 'kmhrs',
 ];
 
-const labels: Record<string, string[]> = {
+const labels = {
     1: ['aiav', 'boko', 'dandy', 'dldss', 'emois', 'fadss', 'fcdss', 'fsdss', 'fsvss', 'ftav', 'iene', 'kire', 'kkbt', 'kmhr', 'kmhrs', 'kuse', 'mgold', 'mist', 'mogi', 'moon', 'msfh', 'mtall', 'namh', 'nhdt', 'nhdta', 'nhdtb', 'noskn', 'open', 'piyo', 'rct', 'rctd', 'sace', 'sdab', 'sdam', 'sdde', 'sdhs', 'sdjs', 'sdmf', 'sdmm', 'sdms', 'sdmt', 'sdmu', 'sdmua', 'sdnm', 'sdth', 'senn', 'setm', 'seth', 'sgki', 'shyn', 'silk', 'silks', 'silku', 'sply', 'star', 'stars', 'start', 'stzy', 'sun', 'suwk', 'svbgr', 'svcao', 'svdvd', 'svmgm', 'svnnp', 'svsha', 'svvrt', 'sw', 'wo'],
     2: ['cen', 'ckw', 'cwm', 'dfdm', 'dfe', 'dje', 'ecb', 'ekai', 'emsk', 'hkw', 'wdi', 'wsp', 'wss', 'wzen'],
     13: ['dsvr'],
@@ -71,13 +71,13 @@ const labels: Record<string, string[]> = {
 };
 
 class AV {
-    label: string = '';
-    number: string = '';
-    suffix: string = '';
-    id: string = '';
-    vid: string = '';
+    label = '';
+    number = '';
+    suffix = '';
+    id = '';
+    vid = '';
 
-    constructor(s: string) {
+    constructor(s) {
         const match = s.match(codePattern);
         if (match?.groups) {
             this.label = match.groups.label.toLowerCase();
@@ -95,34 +95,34 @@ class AV {
         }
     }
 
-    get isVr(): boolean {
+    get isVr() {
         return this.label.endsWith('vr') || vrLabels.includes(this.label);
     }
 
-    get url(): string {
+    get url() {
         return this.isVr || digiLabels.includes(this.label)
             ? `${dmmDigiUrl}${this.vid}/`
             : `${dmmMonoUrl}${this.id}/`;
     }
 
-    get cover(): string {
+    get cover() {
         return this.isVr || digiLabels.includes(this.label)
             ? `${dmmDigiPics}/${this.vid}/${this.vid}pl.jpg`
             : `${dmmMonoPics}/${this.id}/${this.id}pl.jpg`;
     }
 
-    get videos(): string[] {
+    get videos() {
         if (this.isVr) {
             return [
                 `${dmmVrVideos}/${this.vid[0]}/${this.vid.substring(0, 3)}/${this.vid}/${this.vid}vrlite.mp4`,
                 `${dmmVrVideos}/${this.id[0]}/${this.id.substring(0, 3)}/${this.id}/${this.id}vrlite.mp4`,
             ];
         }
-        return ['hhb', 'mhb', '_dmb_w', '_dm_s'].reduce((arr: string[], sfx) => {
+        return ['hhb', 'mhb', '_dmb_w', '_dm_s'].reduce((arr, sfx) => {
             arr.push(`${dmmVideos}/${this.vid[0]}/${this.vid.substring(0, 3)}/${this.vid}/${this.vid}${sfx}.mp4`);
             arr.push(`${dmmVideos}/${this.id[0]}/${this.id.substring(0, 3)}/${this.id}/${this.id}${sfx}.mp4`);
             return arr;
-        }， []);
+        }, []);
     }
 }
 // ---------- AV 类定义结束 ----------
@@ -131,7 +131,7 @@ class AV {
  * 探测候选视频 URL，返回第一个可访问的链接。
  * 全部失败时返回空字符串。
  */
-async function detectVideoUrl(candidates: string[]): Promise<string> {
+async function detectVideoUrl(candidates) {
     for (const url of candidates) {
         try {
             const res = await got(url, {
@@ -178,7 +178,7 @@ async function handler(ctx) {
 
     const list = $('div.item').toArray();
 
-    const items = await Promise.全部(
+    const items = await Promise.all(
         list.map(async (el) => {
             const $el = $(el);
             const $link = $el.find('a').first();
