@@ -1,4 +1,5 @@
 import { load } from 'cheerio';
+
 import type { Route } from '@/types';
 import got from '@/utils/got';
 import { parseDate } from '@/utils/parse-date';
@@ -12,20 +13,113 @@ const dmmVrVideos = 'https://cc3001.dmm.co.jp/vrsample';
 const dmmMonoUrl = 'https://www.dmm.co.jp/mono/dvd/-/detail/=/cid=';
 const dmmDigiUrl = 'https://www.dmm.co.jp/digital/videoa/-/detail/=/cid=';
 
-const digiLabels = [
-    'aiav', 'beaf', 'docd', 'docp', 'fax', 'fabs', 'hmrk', 'htms', 'hoks',
-    'kamef', 'kmai', 'maan', 'mdon', 'mfcd', 'mfct', 'mgtd', 'neob', 'open',
-    'sdhs', 'senn', 'seth', 'shyn', 'silks', 'silku', 'sprd', 'sqis', 'stzy',
-    'vov', 'xox', 'yyds',
-];
+const digiLabels = new Set([
+    'aiav',
+    'beaf',
+    'docd',
+    'docp',
+    'fax',
+    'fabs',
+    'hmrk',
+    'htms',
+    'hoks',
+    'kamef',
+    'kmai',
+    'maan',
+    'mdon',
+    'mfcd',
+    'mfct',
+    'mgtd',
+    'neob',
+    'open',
+    'sdhs',
+    'senn',
+    'seth',
+    'shyn',
+    'silks',
+    'silku',
+    'sprd',
+    'sqis',
+    'stzy',
+    'vov',
+    'xox',
+    'yyds',
+]);
 
-const vrLabels = [
-    'aqube', 'aquco', 'aquga', 'aquma', 'exmo', 'fsvss', 'gopj', 'komz',
-    'slr', 'urvrsp', 'kmhrs',
-];
+const vrLabels = new Set(['aqube', 'aquco', 'aquga', 'aquma', 'exmo', 'fsvss', 'gopj', 'komz', 'slr', 'urvrsp', 'kmhrs']);
 
 const labels = {
-    1: ['aiav', 'boko', 'dandy', 'dldss', 'emois', 'fadss', 'fcdss', 'fsdss', 'fsvss', 'ftav', 'iene', 'kire', 'kkbt', 'kmhr', 'kmhrs', 'kuse', 'mgold', 'mist', 'mogi', 'moon', 'msfh', 'mtall', 'namh', 'nhdt', 'nhdta', 'nhdtb', 'noskn', 'open', 'piyo', 'rct', 'rctd', 'sace', 'sdab', 'sdam', 'sdde', 'sdhs', 'sdjs', 'sdmf', 'sdmm', 'sdms', 'sdmt', 'sdmu', 'sdmua', 'sdnm', 'sdth', 'senn', 'setm', 'seth', 'sgki', 'shyn', 'silk', 'silks', 'silku', 'sply', 'star', 'stars', 'start', 'stzy', 'sun', 'suwk', 'svbgr', 'svcao', 'svdvd', 'svmgm', 'svnnp', 'svsha', 'svvrt', 'sw', 'wo'],
+    1: [
+        'aiav',
+        'boko',
+        'dandy',
+        'dldss',
+        'emois',
+        'fadss',
+        'fcdss',
+        'fsdss',
+        'fsvss',
+        'ftav',
+        'iene',
+        'kire',
+        'kkbt',
+        'kmhr',
+        'kmhrs',
+        'kuse',
+        'mgold',
+        'mist',
+        'mogi',
+        'moon',
+        'msfh',
+        'mtall',
+        'namh',
+        'nhdt',
+        'nhdta',
+        'nhdtb',
+        'noskn',
+        'open',
+        'piyo',
+        'rct',
+        'rctd',
+        'sace',
+        'sdab',
+        'sdam',
+        'sdde',
+        'sdhs',
+        'sdjs',
+        'sdmf',
+        'sdmm',
+        'sdms',
+        'sdmt',
+        'sdmu',
+        'sdmua',
+        'sdnm',
+        'sdth',
+        'senn',
+        'setm',
+        'seth',
+        'sgki',
+        'shyn',
+        'silk',
+        'silks',
+        'silku',
+        'sply',
+        'star',
+        'stars',
+        'start',
+        'stzy',
+        'sun',
+        'suwk',
+        'svbgr',
+        'svcao',
+        'svdvd',
+        'svmgm',
+        'svnnp',
+        'svsha',
+        'svvrt',
+        'sw',
+        'wo',
+    ],
     2: ['cen', 'ckw', 'cwm', 'dfdm', 'dfe', 'dje', 'ecb', 'ekai', 'emsk', 'hkw', 'wdi', 'wsp', 'wss', 'wzen'],
     13: ['dsvr'],
     18: ['sprd'],
@@ -96,75 +190,86 @@ class AV {
     }
 
     get isVr() {
-        return this.label.endsWith('vr') || vrLabels.includes(this.label);
+        return this.label.endsWith('vr') || vrLabels.has(this.label);
     }
 
     get url() {
-        return this.isVr || digiLabels.includes(this.label)
-            ? `${dmmDigiUrl}${this.vid}/`
-            : `${dmmMonoUrl}${this.id}/`;
+        return this.isVr || digiLabels.has(this.label) ? `${dmmDigiUrl}${this.vid}/` : `${dmmMonoUrl}${this.id}/`;
     }
 
     get cover() {
-        return this.isVr || digiLabels.includes(this.label)
-            ? `${dmmDigiPics}/${this.vid}/${this.vid}pl.jpg`
-            : `${dmmMonoPics}/${this.id}/${this.id}pl.jpg`;
+        return this.isVr || digiLabels.has(this.label) ? `${dmmDigiPics}/${this.vid}/${this.vid}pl.jpg` : `${dmmMonoPics}/${this.id}/${this.id}pl.jpg`;
     }
 
     get videos() {
         if (this.isVr) {
-            return [
-                `${dmmVrVideos}/${this.vid[0]}/${this.vid.substring(0, 3)}/${this.vid}/${this.vid}vrlite.mp4`,
-                `${dmmVrVideos}/${this.id[0]}/${this.id.substring(0, 3)}/${this.id}/${this.id}vrlite.mp4`,
-            ];
+            return [`${dmmVrVideos}/${this.vid[0]}/${this.vid.slice(0, 3)}/${this.vid}/${this.vid}vrlite.mp4`, `${dmmVrVideos}/${this.id[0]}/${this.id.slice(0, 3)}/${this.id}/${this.id}vrlite.mp4`];
         }
-        return ['hhb', 'mhb', '_dmb_w', '_dm_s'].reduce((arr, sfx) => {
-            arr.push(`${dmmVideos}/${this.vid[0]}/${this.vid.substring(0, 3)}/${this.vid}/${this.vid}${sfx}.mp4`);
-            arr.push(`${dmmVideos}/${this.id[0]}/${this.id.substring(0, 3)}/${this.id}/${this.id}${sfx}.mp4`);
-            return arr;
-        }, []);
+        const result: string[] = [];
+        for (const sfx of ['hhb', 'mhb', '_dmb_w', '_dm_s']) {
+            result.push(`${dmmVideos}/${this.vid[0]}/${this.vid.slice(0, 3)}/${this.vid}/${this.vid}${sfx}.mp4`);
+            result.push(`${dmmVideos}/${this.id[0]}/${this.id.slice(0, 3)}/${this.id}/${this.id}${sfx}.mp4`);
+        }
+        return result;
     }
 }
 // ---------- AV 类定义结束 ----------
 
-/**
- * 探测候选视频 URL，返回第一个可访问的链接。
- * 全部失败时返回空字符串。
- */
 async function detectVideoUrl(candidates) {
-    for (const url of candidates) {
-        try {
-            const res = await got(url, {
-                method: 'HEAD',
-                headers: { Referer: 'https://www.dmm.co.jp/' },
-                timeout: { request: 1500 },
-                throwHttpErrors: false,
-            });
-            if (res.statusCode === 200) {
-                return url;
+    const results = await Promise.all(
+        candidates.map(async (url) => {
+            try {
+                const res = await got(url, {
+                    method: 'HEAD',
+                    headers: { Referer: 'https://www.dmm.co.jp/' },
+                    timeout: { request: 1500 },
+                    throwHttpErrors: false,
+                });
+                return res.statusCode === 200 ? url : null;
+            } catch {
+                return null;
             }
-        } catch {
-            // 超时或网络错误，继续尝试下一个候选
-        }
+        })
+    );
+    return results.find(Boolean) ?? '';
+}
+
+// 动态 import，本地开发用系统 Chrome，Vercel 生产用 @sparticuz/chromium
+async function launchBrowser() {
+    // Vercel / Lambda 环境
+    if (process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.VERCEL) {
+        const chromium = (await import('@sparticuz/chromium')).default;
+        const puppeteer = (await import('puppeteer-core')).default;
+        return puppeteer.launch({
+            args: chromium.args,
+            defaultViewport: chromium.defaultViewport,
+            executablePath: await chromium.executablePath(),
+            headless: chromium.headless,
+        });
     }
-    return '';
+
+    // 本地开发环境：用 puppeteer-core + 本机已安装的 Chrome
+    const puppeteer = (await import('puppeteer-core')).default;
+    // Windows 默认 Chrome 路径，如不同请修改
+    const executablePath = process.env.CHROME_PATH || String.raw`C:\Users\SALRRAB\RSSHub\node_modules\.cache\puppeteer\chrome\win64-136.0.7103.49\chrome-win64\chrome.exe`;
+    return puppeteer.launch({ headless: true, executablePath });
 }
 
 export const route: Route = {
     path: '/tag/:tagid',
     categories: ['multimedia'],
     example: '/tktube/tag/d16507037fea89b20ca12ea5159474e5',
-    parameters: { tagid: '标签 ID，从标签页 URL 中获取' },
+    parameters: { tagid: 'Tag ID, found in the tag page URL' },
     features: {
         requireConfig: false,
-        requirePuppeteer: false,
-        antiCrawler: false,
+        requirePuppeteer: true,
+        antiCrawler: true,
         supportBT: false,
         supportPodcast: false,
         supportScihub: false,
         nsfw: true,
     },
-    name: '标签',
+    name: 'Tag',
     maintainers: [],
     handler,
 };
@@ -173,20 +278,21 @@ async function handler(ctx) {
     const { tagid } = ctx.req.param();
     const url = `https://tktube.com/zh/tags/${tagid}/`;
 
+    const browser = await launchBrowser();
+    const page = await browser.newPage();
+    let html = '';
 
-    const response = await got({
-        method: 'get',
-        url,
-        headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-            Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-            'Accept-Encoding': 'gzip, deflate, br',
-            Referer: 'https://tktube.com/',
-        },
-    });
-    const $ = load(response.data);
+    try {
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36');
+        await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+        await page.waitForSelector('div.item', { timeout: 15000 });
+        html = await page.content();
+    } finally {
+        await page.close();
+        await browser.close();
+    }
 
+    const $ = load(html);
     const list = $('div.item').toArray();
 
     const items = await Promise.all(
@@ -209,7 +315,6 @@ async function handler(ctx) {
             const dateText = $el.find('div.added em').text().trim();
             const pubDate = dateText ? parseDate(dateText) : null;
 
-            // 1. 从 href 末段提取番号
             const lastPartMatch = href.match(/\/([^/]+)\/?$/);
             if (!lastPartMatch) {
                 return null;
@@ -236,7 +341,6 @@ async function handler(ctx) {
                 return null;
             }
 
-            // 2. 探测有效 DMM 预览视频链接
             const avObj = new AV(code);
             let dmmVideoUrl = '';
 
@@ -252,9 +356,7 @@ async function handler(ctx) {
 
             const description = [
                 imgSrc ? `<img src="${imgSrc}" width="100%"/><br>` : '',
-                dmmVideoUrl
-                    ? `<iframe width="544" height="306" src="${dmmVideoUrl}" frameborder="0" allowfullscreen></iframe><br>`
-                    : '',
+                dmmVideoUrl ? `<iframe width="544" height="306" src="${dmmVideoUrl}" frameborder="0" allowfullscreen></iframe><br>` : '',
                 `<iframe width="544" height="306" src="${embedUrl}" frameborder="0" allowfullscreen></iframe><br>`,
             ].join('\n');
 
@@ -269,7 +371,7 @@ async function handler(ctx) {
     );
 
     return {
-        title: `TKTube - ${$('title').text() || '标签页'}`,
+        title: `TKTube - ${$('title').text() || 'Tag'}`,
         link: url,
         description: $('meta[name="description"]').attr('content') || '',
         item: items.filter(Boolean),
