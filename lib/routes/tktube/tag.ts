@@ -322,17 +322,29 @@ async function handler(ctx) {
             const lastPart = lastPartMatch[1];
 
             let code = '';
-            const avTest = new AV(lastPart);
-            if (avTest?.label && avTest?.number) {
-                code = `${avTest.label}-${avTest.number}`;
+
+            // 优先从 title 中提取番号（最准确，避免 URL 末尾数字被混入的问题）
+            // title 通常格式为 "NACR-726 女優名" 或 "FC2-PPV-1234567 ..."
+            const titleFc2Match = title.match(/^(fc2-ppv-\d+)/i);
+            const titleCodeMatch = title.match(/^([a-zA-Z]+-\d+[a-z]*)/);
+            if (titleFc2Match) {
+                code = titleFc2Match[1];
+            } else if (titleCodeMatch) {
+                code = titleCodeMatch[1];
             } else {
+                // fallback：从 URL 末尾解析
                 const fc2Match = lastPart.match(/^(fc2-ppv-\d+)/i);
                 if (fc2Match) {
                     code = fc2Match[1];
                 } else {
-                    const generalMatch = lastPart.match(/([a-z]+[-_]?\d+)/i);
-                    if (generalMatch) {
-                        code = generalMatch[1];
+                    const avTest = new AV(lastPart);
+                    if (avTest?.label && avTest?.number) {
+                        code = `${avTest.label}-${avTest.number}${avTest.suffix}`;
+                    } else {
+                        const generalMatch = lastPart.match(/([a-z]+[-_]?\d+[a-z]?)/i);
+                        if (generalMatch) {
+                            code = generalMatch[1];
+                        }
                     }
                 }
             }
