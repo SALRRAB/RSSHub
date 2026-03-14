@@ -357,8 +357,7 @@ async function handler(ctx) {
             let dmmVideoUrl = '';
 
             if (avObj?.videos?.length > 0) {
-                const candidates = [avObj.videos[0], avObj.videos[1]].filter(Boolean);
-                dmmVideoUrl = await detectVideoUrl(candidates);
+                dmmVideoUrl = await detectVideoUrl(avObj.videos);
                 if (!dmmVideoUrl) {
                     dmmVideoUrl = avObj.videos[0];
                 }
